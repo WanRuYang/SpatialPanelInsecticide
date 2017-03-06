@@ -1,0 +1,80 @@
+---
+- name: Install APT repositories
+  apt_repository: repo='ppa:ubuntugis/ppa' state=present
+  become: true
+
+- apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: E298A3A825C0D65DFD57CBB651716619E084DAB9
+  become: true
+
+- name: Install APT repositories
+  apt_repository: 
+    repo: 'deb [arch=amd64,i386] https://cran.rstudio.com/bin/linux/ubuntu xenial/' 
+    state: present
+  become: true
+
+- name: Install APT dependencies
+  apt: name={{ item }} state=present update_cache=true
+  with_items:
+    - python-pip
+    - gdal-bin
+    - python-gdal
+    - libgdal1-dev
+    - r-base
+    - libcurl4-openssl-dev 
+    - libssl-dev
+  become: true
+
+- name: Install Python modules
+  pip: name={{ item }} state=present
+  with_items:
+    - numpy
+    - scipy
+    - sklearn
+    - pandas
+    - boto3
+    - statsmodels
+    - osmapi
+    - fiona
+    - shapely
+    - pyshp
+    - pyproj
+    - geopy
+  become: true
+
+- name: Making sure R is installed (debian/ubuntu apt)
+  apt: pkg=r-base state=installed
+  become: true
+
+- name: rpackages
+  command: >
+    Rscript --slave --no-save --no-restore-history -e "if (! ('{{ item }}' %in% installed.packages()[,'Package'])) { install.packages(pkgs='{{ item }}', repos=c('http://ftp.heanet.ie/mirrors/cran.r-project.org/')); print('Added'); } else { print('Already installed'); }"
+  register: r_result
+  failed_when: "r_result.rc != 0 or 'had non-zero exit status' in r_result.stderr"
+  changed_when: "'Added' in r_result.stdout"
+  with_items: 
+    - ggplot2
+    - rgdal
+    - devtools
+    - raster
+    - plyr
+    - dplyr
+    - maptools
+    - plm
+    - splm
+    - RPostgreSQL
+    - extrafont
+    - Amelia
+  become: true
+
+- name: add Jupyter kernel ir
+  command: >
+    Rscript --slave -e "devtools::install_github('IRkernel/IRkernel')"
+  become: true
+
+- name: activate ir
+  command: >
+    Rscript --slave -e "IRkernel::installspec(user = FALSE)"
+  become: true
+
