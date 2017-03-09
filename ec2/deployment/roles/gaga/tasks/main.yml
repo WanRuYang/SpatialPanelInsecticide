@@ -32,6 +32,7 @@
     - numpy
     - scipy
     - sklearn
+    - tensorflow
     - pandas
     - boto3
     - statsmodels
@@ -58,6 +59,7 @@
     - rgdal
     - devtools
     - raster
+    - magrittr
     - plyr
     - dplyr
     - maptools
@@ -66,6 +68,8 @@
     - RPostgreSQL
     - extrafont
     - Amelia
+    - leafleat
+    - RColorBrewer
   become: true
 
 - name: add Jupyter kernel ir
